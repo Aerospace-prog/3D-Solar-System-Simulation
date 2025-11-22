@@ -1736,19 +1736,36 @@
       }
 
       async function fetchGemini(prompt) {
-        // Send prompt to our server endpoint. The server holds the API key
-        // and performs the external request so the key is never exposed.
-        const response = await fetch("/api/gemini", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
-        });
-        if (!response.ok) {
-          const text = await response.text().catch(() => "");
-          throw new Error("Server error: " + (text || response.status));
+        // Try local API first (when running the Express server locally).
+        // If that fails (404 or network error), fall back to Netlify Function
+        // path `/.netlify/functions/gemini` when deployed on Netlify.
+        const endpoints = ["/api/gemini", "/.netlify/functions/gemini"];
+        let lastErr = null;
+        for (const ep of endpoints) {
+          try {
+            const response = await fetch(ep, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ prompt }),
+            });
+            if (!response.ok) {
+              // if not found, try next endpoint
+              if (response.status === 404) {
+                lastErr = new Error("Not found");
+                continue;
+              }
+              const text = await response.text().catch(() => "");
+              throw new Error(text || `Server error ${response.status}`);
+            }
+            const data = await response.json();
+            return data.text;
+          } catch (e) {
+            lastErr = e;
+            // try next endpoint
+            continue;
+          }
         }
-        const data = await response.json();
-        return data.text;
+        throw lastErr || new Error("Failed to call any backend endpoint");
       }
 
       init();
