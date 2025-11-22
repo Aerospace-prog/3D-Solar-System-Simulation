@@ -50,17 +50,6 @@ npm run dev
 
 4. Open your browser at `http://localhost:3000`.
 
-Notes on robustness and recent fixes
-
-- Broken or missing remote textures will now be handled gracefully by a `safeLoadTexture` helper: failed texture loads produce a small canvas fallback texture and print a console warning. This prevents rendering errors when a remote asset 404s.
-- The client script is loaded as a module; inline `onclick` handlers in the HTML expected globals and produced `ReferenceError`s. To preserve the existing HTML structure we explicitly expose UI functions (`togglePause`, `resetView`, `toggleTour`, `closePanel`, `askGemini`) on `window`.
-
-Ideas & Next Steps
-
-- Replace inline `onclick` attributes with `addEventListener` for cleaner, module-friendly code.
-- Add authentication (e.g., API tokens or user sessions) and rate limiting on `/api/gemini`.
-- Bundle and version static textures locally to avoid remote 404s and reduce external dependencies.
-- Add unit tests for the server endpoint and integration tests for the fetch flow.
 
 Contributing
 
@@ -74,10 +63,5 @@ Credits
 
 - Textures and planet imagery: Wikimedia Commons and public domain sources where used.
 - Three.js examples and helpers form the rendering backbone.
-
-If you want, I can also:
-
-- Replace the currently-broken Neptune/Io/Titan texture URLs with local assets or updated remote links.
-- Remove inline handlers and refactor event wiring to modern patterns.
 
 Enjoy exploring the solar system!
